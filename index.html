@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>圍棋社園遊會 - 挑戰全攻略</title>
+    <style>
+        :root {
+            --go-wood: #e3c08d;
+            --go-wood-dark: #b8860b;
+            --go-black: #1a1a1a;
+            --go-white: #fdfdfd;
+            --font-main: 'Microsoft JhengHei', 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: var(--font-main);
+            color: #333;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .home-container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+            transition: all 0.5s ease;
+        }
+
+        .home-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            text-align: center;
+            border-right: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .home-column:last-child { border-right: none; }
+        .home-column:hover { flex: 1.3; background-color: #fffaf5; }
+
+        .home-column h2 { 
+            font-size: 3rem; 
+            font-weight: 900; 
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .home-column .game-title {
+            font-size: 2.2rem;
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+
+        .home-column p { font-size: 1.3rem; color: #555; max-width: 300px; line-height: 1.5; }
+
+        .col-1 { background-color: #f0f7ff; border-top: 15px solid #4a90e2; }
+        .col-1 h2, .col-1 .game-title { color: #2171c7; }
+        .col-2 { background-color: #fff9f0; border-top: 15px solid #f5a623; }
+        .col-2 h2, .col-2 .game-title { color: #d48806; }
+        .col-3 { background-color: #f6ffed; border-top: 15px solid #7ed321; }
+        .col-3 h2, .col-3 .game-title { color: #52c41a; }
+
+        .game-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--go-white);
+            z-index: 100;
+            display: none;
+            overflow-y: auto;
+            padding: 40px 20px;
+            box-sizing: border-box;
+            animation: slideUp 0.5s ease forwards;
+        }
+
+        .game-screen.active { display: block; }
+        .content-wrapper { max-width: 1000px; margin: 0 auto; position: relative; }
+
+        .rule-section {
+            display: flex;
+            align-items: flex-start;
+            gap: 25px;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #fdfdfd;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--go-wood-dark);
+        }
+
+        .rule-text { flex: 1; line-height: 1.7; }
+        .rule-text h3 { margin-top: 0; color: var(--go-wood-dark); }
+        
+        .rule-img-box {
+            width: 280px;
+            height: 280px;
+            background: #e3c08d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .fixed-img-container {
+            width: 100%;
+            height: 350px;
+            background: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .fixed-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background-color: white;
+        }
+
+        .img-error-msg {
+            padding: 20px;
+            color: #d48806;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        button {
+            cursor: pointer;
+            padding: 15px 30px;
+            border-radius: 10px;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-primary { background-color: var(--go-wood-dark); color: white; }
+        .btn-secondary { background-color: #eee; color: #555; }
+        button:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .btn-group { display: flex; gap: 20px; justify-content: center; margin-top: 40px; padding-bottom: 40px; }
+
+        .question-box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 40px; }
+        .problem-link { text-decoration: none; color: inherit; display: block; transition: transform 0.3s; }
+        .problem-link:hover { transform: scale(1.02); }
+        .difficulty-label { font-size: 2.5rem; font-weight: 900; margin-bottom: 10px; }
+        .diff-easy { color: #4a90e2; }
+        .diff-hard { color: #e74c3c; }
+
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 30px; }
+        .option-btn { background: #f5f5f5; text-align: left; padding: 20px; border: 2px solid transparent; font-size: 1rem; }
+        .option-btn:hover { border-color: var(--go-wood-dark); background: #fff9f0; }
+
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        @keyframes popUp {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .success-animate { animation: popUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        .confetti {
+            position: absolute; width: 10px; height: 10px; z-index: 200;
+            animation: fall 3s ease-out infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(500px) rotate(720deg); opacity: 0; }
+        }
+
+        .score-highlight { font-size: 1.5rem; font-weight: bold; color: var(--go-wood-dark); margin: 10px 0; }
+
+        .stone-black { fill: #1a1a1a; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); }
+        .stone-white { fill: #fdfdfd; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2)); }
+        .text-label { font-size: 12px; font-weight: bold; fill: #ff4444; text-anchor: middle; }
+
+        @media (max-width: 900px) {
+            .home-container { flex-direction: column; }
+            .home-column { height: 33.33vh; border-right: none; border-bottom: 1px solid #ddd; }
+            .home-column h2 { font-size: 2rem; }
+            .home-column .game-title { font-size: 1.5rem; }
+            .rule-section { flex-direction: column; align-items: center; }
+            .rule-img-box { width: 100%; height: auto; min-height: 250px; }
+            .fixed-img-container { height: 250px; }
+            .options-grid, .problem-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div style="display: none;">
+    <svg id="svg-rule0" viewBox="0 0 200 200"><rect width="200" height="200" fill="#e3c08d"/><g stroke="#000" stroke-width="1" opacity="0.3"><path d="M0 40H200 M0 80H200 M0 120H200 M0 160H200 M40 0V200 M80 0V200 M120 0V200 M160 0V200"/></g><circle cx="80" cy="80" r="15" class="stone-black"/><circle cx="120" cy="80" r="15" class="stone-white"/><circle cx="80" cy="120" r="15" class="stone-white"/><circle cx="120" cy="120" r="15" class="stone-black"/></svg>
+    <svg id="svg-rule1" viewBox="0 0 200 200"><rect width="200" height="200" fill="#e3c08d"/><g stroke="#000" stroke-width="1" opacity="0.3"><path d="M20 0V200 M60 0V200 M100 0V200 M140 0V200 M180 0V200 M0 20H200 M0 60H200 M0 100H200 M0 140H200 M0 180H200"/></g><circle cx="100" cy="100" r="18" class="stone-black"/><circle cx="100" cy="60" r="4" fill="#ff4444"/><circle cx="100" cy="140" r="4" fill="#ff4444"/><circle cx="60" cy="100" r="4" fill="#ff4444"/><circle cx="140" cy="100" r="4" fill="#ff4444"/></svg>
+    <svg id="svg-rule2" viewBox="0 0 200 200"><rect width="200" height="200" fill="#e3c08d"/><g stroke="#000" stroke-width="1" opacity="0.3"><path d="M20 0V200 M60 0V200 M100 0V200 M140 0V200 M180 0V200 M0 20H200 M0 60H200 M0 100H200 M0 140H200 M0 180H200"/></g><circle cx="100" cy="60" r="18" class="stone-white"/><circle cx="100" cy="140" r="18" class="stone-white"/><circle cx="60" cy="100" r="18" class="stone-white"/><circle cx="140" cy="100" r="18" class="stone-white"/><line x1="90" y1="90" x2="110" y2="110" stroke="#ff4444" stroke-width="4"/><line x1="110" y1="90" x2="90" y2="110" stroke="#ff4444" stroke-width="4"/></svg>
+    <svg id="svg-rule3" viewBox="0 0 200 200"><rect width="200" height="200" fill="#e3c08d"/><g stroke="#000" stroke-width="1" opacity="0.3"><path d="M20 0V200 M60 0V200 M100 0V200 M140 0V200 M180 0V200 M0 20H200 M0 60H200 M0 100H200 M0 140H200 M0 180H200"/></g><circle cx="100" cy="60" r="18" class="stone-black"/><circle cx="60" cy="100" r="18" class="stone-black"/><circle cx="100" cy="140" r="18" class="stone-black"/><circle cx="140" cy="60" r="18" class="stone-white"/><circle cx="180" cy="100" r="18" class="stone-white"/><circle cx="140" cy="140" r="18" class="stone-white"/><circle cx="140" cy="100" r="18" class="stone-black"/><circle cx="100" cy="100" r="6" fill="none" stroke="#ff4444" stroke-width="2"/><text x="100" y="30" class="text-label" style="font-size: 14px;">白子需找劫材</text></svg>
+    <svg id="svg-rule-score" viewBox="0 0 200 200"><rect width="200" height="200" fill="#e3c08d"/><g stroke="#000" stroke-width="1" opacity="0.3"><path d="M40 0V200 M80 0V200 M120 0V200 M160 0V200 M0 20H200 M0 60H200 M0 100H200 M0 140H200 M0 180H200"/></g><g class="stones"><circle cx="80" cy="20" r="15" class="stone-black"/><circle cx="80" cy="60" r="15" class="stone-black"/><circle cx="80" cy="100" r="15" class="stone-black"/><circle cx="80" cy="140" r="15" class="stone-black"/><circle cx="80" cy="180" r="15" class="stone-black"/><circle cx="120" cy="20" r="15" class="stone-white"/><circle cx="120" cy="60" r="15" class="stone-white"/><circle cx="120" cy="100" r="15" class="stone-white"/><circle cx="120" cy="140" r="15" class="stone-white"/><circle cx="120" cy="180" r="15" class="stone-white"/></g><g stroke="#ff4444" stroke-width="2"><path d="M35 15L45 25 M45 15L35 25"/><path d="M35 55L45 65 M45 55L35 65"/><path d="M35 95L45 105 M45 95L35 105"/><path d="M35 135L45 145 M45 135L35 145"/><path d="M35 175L45 185 M45 175L35 185"/><path d="M155 15L165 25 M165 15L155 25"/><path d="M155 55L165 65 M165 55L155 65"/><path d="M155 95L165 105 M165 95L155 105"/><path d="M155 135L165 145 M165 135L155 145"/><path d="M155 175L165 185 M165 175L155 185"/></g><text x="40" y="110" class="text-label" style="fill: #1a1a1a; font-size: 14px;">黑地</text><text x="160" y="110" class="text-label" style="fill: #555; font-size: 14px;">白地</text></svg>
+    <svg id="svg-quiz1" viewBox="0 0 200 200"><rect width="200" height="200" fill="#e3c08d"/><g stroke="#000" stroke-width="1" opacity="0.3"><path d="M40 0V200 M80 0V200 M120 0V200 M160 0V200 M0 40H200 M0 80H200 M0 120H200 M0 160H200"/></g><circle cx="80" cy="80" r="18" class="stone-black"/></svg>
+    <svg id="svg-quiz2" viewBox="0 0 200 200"><rect width="200" height="200" fill="#e3c08d"/><g stroke="#000" stroke-width="1" opacity="0.3"><path d="M40 0V200 M80 0V200 M120 0V200 M160 0V200 M0 40H200 M0 80H200 M0 120H200 M0 160H200"/></g><circle cx="120" cy="80" r="18" class="stone-white"/><circle cx="120" cy="40" r="18" class="stone-black"/><circle cx="120" cy="120" r="18" class="stone-black"/><circle cx="160" cy="80" r="18" class="stone-black"/><text x="80" y="85" class="text-label" font-size="20">A</text></svg>
+    <svg id="svg-quiz4" viewBox="0 0 200 200"><rect width="200" height="200" fill="#e3c08d"/><g stroke="#000" stroke-width="1" opacity="0.3"><path d="M40 0V200 M80 0V200 M120 0V200 M160 0V200 M0 40H200 M0 80H200 M0 120H200 M0 160H200"/></g><circle cx="80" cy="40" r="18" class="stone-white"/><circle cx="80" cy="120" r="18" class="stone-white"/><circle cx="40" cy="80" r="18" class="stone-white"/><circle cx="120" cy="80" r="18" class="stone-white"/><line x1="70" y1="70" x2="90" y2="90" stroke="#ff4444" stroke-width="4"/><line x1="90" y1="70" x2="70" y2="90" stroke="#ff4444" stroke-width="4"/><text x="80" y="30" class="text-label" style="font-size: 14px;">黑子下這裡？</text></svg>
+</div>
+
+<div id="home-container" class="home-container">
+    <div class="home-column col-1" onclick="openGame('game1-tutorial')"><h2>🎯</h2><span class="game-title">圍棋新手村</span><p>基礎規則與實戰演練</p><button class="btn-primary" style="margin-top: 30px;">進入挑戰</button></div>
+    <div class="home-column col-2" onclick="startHikaruGame()"><h2>🎯</h2><span class="game-title">棋靈王知識家</span><p>動畫經典知識大考驗</p><button class="btn-primary" style="margin-top: 30px;">進入挑戰</button></div>
+    <div class="home-column col-3" onclick="openGame('game3-screen')"><h2>🎯</h2><span class="game-title">死活題大挑戰</span><p>挑戰腦力極限思維</p><button class="btn-primary" style="margin-top: 30px;">進入挑戰</button></div>
+</div>
+
+<div id="game1-tutorial" class="game-screen">
+    <div class="content-wrapper">
+        <h1 style="text-align: center; color: var(--go-wood-dark); margin-bottom: 40px;">圍棋正規規則教學</h1>
+        <div class="rule-section"><div class="rule-text"><h3>1. 棋具與落子</h3><ul><li>棋盤由縱橫各 19 條線組成，棋子下在線與線的「交叉點」上。</li><li>黑子先行，白子後行，雙方交替落子，棋子落下後不可移動。</li></ul></div><div class="rule-img-box" id="box-rule0"></div></div>
+        <div class="rule-section"><div class="rule-text"><h3>2. 棋子的「氣」</h3><ul><li>棋子在棋盤上沿線相鄰的空位稱為「氣」。</li><li>單獨一顆棋子在中央有 4 氣，在邊上 3 氣，在角上 2 氣。</li><li>同色的棋子相互連接時，它們共用所有的「氣」。</li></ul></div><div class="rule-img-box" id="box-rule1"></div></div>
+        <div class="rule-section"><div class="rule-text"><h3>3. 提子（吃子）</h3><p>當一顆棋子或一組棋子的「氣」被對方完全包圍佔據時，該棋子即被「提子」，必須從棋盤上移除。</p></div><div class="rule-img-box" id="box-rule-capture"></div></div>
+        <div class="rule-section"><div class="rule-text"><h3>4. 禁著點</h3><p>落子後會使自己的棋子立即處於「沒氣」狀態，且不能提掉對方棋子，該位置稱為「禁著點」，禁止落子。</p></div><div class="rule-img-box" id="box-rule2"></div></div>
+        <div class="rule-section"><div class="rule-text"><h3>5. 打劫</h3><p>當雙方可以互相提掉對方同一顆棋子時，為了避免陷入無限循環，提掉對方一子後，另一方不能立即回提，必須先在棋盤其他位置下一手（找劫材），之後才能回提。</p></div><div class="rule-img-box" id="box-rule3"></div></div>
+        <div class="rule-section"><div class="rule-text"><h3>6. 勝負判定</h3><p>對局結束時，以雙方圍得的地盤（交叉點數量）多寡來決定勝負。</p></div><div class="rule-img-box" id="box-rule-score"></div></div>
+        <div class="btn-group"><button class="btn-primary" onclick="startNoviceQuiz()">我學會了，開始測驗！</button><button class="btn-secondary" onclick="closeGame()">返回主選單</button></div>
+    </div>
+</div>
+
+<div id="game1-quiz" class="game-screen">
+    <div class="content-wrapper">
+        <h2 id="novice-q-title" style="text-align: center;">新手測驗 (1/3)</h2>
+        <div class="question-box"><div class="rule-img-box" id="novice-q-box" style="width: 100%; height: 350px; margin: 0 auto 20px auto;"></div><p id="novice-q-text" style="font-size: 1.4rem; font-weight: bold;"></p><div class="options-grid" id="novice-options"></div></div>
+        <div class="btn-group"><button class="btn-secondary" onclick="closeGame()">放棄挑戰</button></div>
+    </div>
+</div>
+
+<div id="game2-screen" class="game-screen">
+    <div class="content-wrapper">
+        <h2 id="hikaru-q-title" style="text-align: center;">棋靈王知識家 (1/10)</h2>
+        <div class="question-box"><p id="hikaru-q-text" style="font-size: 1.4rem; font-weight: bold; margin-bottom: 30px;"></p><div id="hikaru-options" class="options-grid" style="grid-template-columns: 1fr;"></div></div>
+        <div class="btn-group">
+            <button id="hikaru-prev-btn" class="btn-secondary" onclick="prevHikaruQuestion()" style="display: none;">上一題</button>
+            <button class="btn-secondary" onclick="closeGame()">放棄挑戰</button>
+        </div>
+    </div>
+</div>
+
+<div id="game3-screen" class="game-screen">
+    <div class="content-wrapper">
+        <h1 style="text-align: center;">🎯 遊戲三：死活題大挑戰</h1>
+        <p style="text-align: center;">請選擇難度進行挑戰（點擊圖片可開啟新視窗）：</p>
+        
+        <div class="problem-grid">
+            <a href="https://www.101weiqi.com/q/267478/" target="_blank" class="problem-link">
+                <div class="question-box">
+                    <div class="difficulty-label diff-easy">簡單</div>
+                    <div class="fixed-img-container">
+                        <img src="https://lh3.googleusercontent.com/d/1GUCDDJGm7o5dvRRaVkQA0a7ukA1zCBAO" alt="簡單題" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <div class="img-error-msg" style="display:none;">圖片載入失敗<br>請點此直接開啟題目連結</div>
+                    </div>
+                    <p style="margin-top: 15px; color: #666; font-weight: bold;">點擊開始挑戰</p>
+                </div>
+            </a>
+            <a href="https://www.101weiqi.com/q/196470/" target="_blank" class="problem-link">
+                <div class="question-box">
+                    <div class="difficulty-label diff-hard">困難</div>
+                    <div class="fixed-img-container">
+                        <img src="https://lh3.googleusercontent.com/d/1mli8RWC1mwacAvhNXh0qhwBTw8-lNG9D" alt="困難題" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <div class="img-error-msg" style="display:none;">圖片載入失敗<br>請點此直接開啟題目連結</div>
+                    </div>
+                    <p style="margin-top: 15px; color: #666; font-weight: bold;">點擊開始挑戰</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="result-screen" style="margin-top: 40px;">
+            <div class="btn-group">
+                <button class="btn-primary" onclick="handleG3Success()">我答對了！</button>
+                <button class="btn-secondary" onclick="closeGame()">返回主選單</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="result-screen" class="game-screen">
+    <div id="confetti-container"></div>
+    <div class="content-wrapper result-screen" style="padding-top: 100px;">
+        <h1 id="result-title"></h1>
+        <div id="result-content" style="font-size: 1.3rem; margin: 30px 0;"></div>
+        <div class="btn-group" id="result-btns"></div>
+    </div>
+</div>
+
+<script>
+    function injectSVG() {
+        document.getElementById('box-rule0').innerHTML = document.getElementById('svg-rule0').outerHTML;
+        document.getElementById('box-rule1').innerHTML = document.getElementById('svg-rule1').outerHTML;
+        document.getElementById('box-rule-capture').innerHTML = document.getElementById('svg-quiz2').outerHTML;
+        document.getElementById('box-rule2').innerHTML = document.getElementById('svg-rule2').outerHTML;
+        document.getElementById('box-rule3').innerHTML = document.getElementById('svg-rule3').outerHTML;
+        document.getElementById('box-rule-score').innerHTML = document.getElementById('svg-rule-score').outerHTML;
+    }
+    window.onload = injectSVG;
+
+    const hikaruQuestions = [
+        { q: "Q1. 請問《棋靈王》這部作品，主要是下哪種棋類？", a: ["(1) 五子棋", "(2) 圍棋", "(3) 象棋", "(4) 西洋棋"], c: 1 },
+        { q: "Q2. 進藤光在爺爺的倉庫裡發現了一個古老的棋盤，因而被幽靈附身。請問那是什麼棋盤？", a: ["(1) 飛行棋盤", "(2) 大富翁紙盤", "(3) 象棋盤", "(4) 圍棋盤"], c: 3 },
+        { q: "Q3. 附身在主角身上的幽靈名叫「佐為」，請問他生前最喜歡、也最執著的事情是什麼？", a: ["(1) 打籃球", "(2) 參加百米賽跑", "(3) 下圍棋", "(4) 玩手機遊戲"], c: 2 },
+        { q: "Q4. 幽靈佐為畢生追求的圍棋最高境界，被稱作什麼？", a: ["(1) 特級廚師", "(2) 神之一手", "(3) 海賊王", "(4) 宇宙最強"], c: 1 },
+        { q: "Q5. 圍棋對弈時，雙方所使用的棋子主要分為哪兩種顏色？", a: ["(1) 紅與綠", "(2) 金與銀", "(3) 七彩霓虹色", "(4) 黑與白"], c: 3 },
+        { q: "Q6. 進藤光一開始完全不會下棋，請問幽靈佐為最初是怎麼讓進藤光跟別人對弈的？", a: ["(1) 佐為指示下哪裡，進藤光就跟著下哪裡", "(2) 佐為用念力自動控制棋子飛過去", "(3) 佐為每天晚上托夢給他上課", "(4) 佐為給了他一顆吃了就會下棋的藥丸"], c: 0 },
+        { q: "Q7. 圍棋比賽對弈時，兩名選手面對面坐著，這時候最需要保持什麼態度？", a: ["(1) 戴著耳機大聲唱歌", "(2) 不斷對著對手扮鬼臉干擾", "(3) 安靜思考並尊重對手", "(4) 在棋盤旁邊烤肉"], c: 2 },
+        { q: "Q8. 當棋子被對手完全包圍、沒有氣時，會發生什麼事？", a: ["(1) 該棋子會立刻變色成為對手的", "(2) 被對手吃掉（提取）", "(3) 棋子會產生小規模爆炸", "(4) 什麼事都不會發生"], c: 1 },
+        { q: "Q9. 如果一盤棋下到一半，發現自己差距太大已經輸定了，這時怎樣做最有運動家精神？", a: ["(1) 生氣地把棋盤翻掉", "(2) 假裝肚子痛，趕快跑去廁所躲起來", "(3) 把對手的棋子偷偷藏口袋", "(4) 投子認輸，並謝謝指教"], c: 3 },
+        { q: "Q10. 如果參加完今天的活動，覺得下棋好像很有趣，接下來最推薦的做法是什麼？", a: ["(1) 趕快報名加入圍棋社！", "(2) 買一張機票飛去日本找幽靈", "(3) 去公園找老爺爺下象棋", "(4) 回家倒頭就睡"], c: 0 }
+    ];
+
+    const noviceQuestions = [
+        { q: "1. 數氣：請問圖中位在交叉點上的黑子有幾口氣？", a: ["1 口氣", "2 口氣", "3 口氣", "4 口氣"], c: 3, svgId: "svg-quiz1" },
+        { q: "2. 提取：黑子若落在 A 點，白子會發生什麼事？", a: ["白子被提取（吃掉），因為最後一口氣被填滿了", "什麼事都沒發生，白子還有其他氣", "黑子不能下在那裡，因為是禁著點", "白子會立刻變換顏色"], c: 0, svgId: "svg-quiz2" },
+        { q: "3. 禁著點：黑子現在可以下在紅色打叉的位置嗎？", a: ["可以，圍棋任何位置都能下", "不可以，下在那裡會讓自己立刻沒氣（禁著點）", "可以，只要沒被吃掉就可以下", "不可以，要先等白棋移開"], c: 1, svgId: "svg-quiz4" }
+    ];
+
+    let currentNoviceIdx = 0, noviceCorrect = 0, currentHikaruIdx = 0, hikaruScore = 0, hikaruAnswers = [];
+
+    function openGame(id) {
+        document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
+        const screen = document.getElementById(id);
+        if(screen) screen.classList.add('active');
+        window.scrollTo(0,0);
+    }
+
+    function closeGame() { document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active')); }
+    function startNoviceQuiz() { currentNoviceIdx = 0; noviceCorrect = 0; showNoviceQuestion(); openGame('game1-quiz'); }
+
+    function showNoviceQuestion() {
+        const q = noviceQuestions[currentNoviceIdx];
+        document.getElementById('novice-q-title').innerText = `新手測驗 (${currentNoviceIdx + 1}/3)`;
+        document.getElementById('novice-q-text').innerText = q.q;
+        const qBox = document.getElementById('novice-q-box');
+        qBox.innerHTML = document.getElementById(q.svgId).outerHTML;
+        qBox.querySelector('svg').style.height = "100%";
+        const optContainer = document.getElementById('novice-options');
+        optContainer.innerHTML = '';
+        q.a.forEach((text, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = text;
+            btn.onclick = () => { if (i === q.c) noviceCorrect++; currentNoviceIdx++; if (currentNoviceIdx < 3) showNoviceQuestion(); else showResult(noviceCorrect === 3, "novice"); };
+            optContainer.appendChild(btn);
+        });
+    }
+
+    function startHikaruGame() { currentHikaruIdx = 0; hikaruScore = 0; hikaruAnswers = []; showHikaruQuestion(); openGame('game2-screen'); }
+
+    function showHikaruQuestion() {
+        const q = hikaruQuestions[currentHikaruIdx];
+        document.getElementById('hikaru-q-title').innerText = `棋靈王知識家 (${currentHikaruIdx + 1}/10)`;
+        document.getElementById('hikaru-q-text').innerText = q.q;
+        document.getElementById('hikaru-prev-btn').style.display = currentHikaruIdx > 0 ? 'inline-block' : 'none';
+        const optContainer = document.getElementById('hikaru-options');
+        optContainer.innerHTML = '';
+        q.a.forEach((text, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = text;
+            btn.onclick = () => { const isCorrect = i === q.c; hikaruAnswers[currentHikaruIdx] = isCorrect; if (isCorrect) hikaruScore += 10; currentHikaruIdx++; if (currentHikaruIdx < 10) showHikaruQuestion(); else showResult(hikaruScore === 100, "hikaru"); };
+            optContainer.appendChild(btn);
+        });
+    }
+
+    function prevHikaruQuestion() { if (currentHikaruIdx > 0) { currentHikaruIdx--; if (hikaruAnswers[currentHikaruIdx]) hikaruScore -= 10; showHikaruQuestion(); } }
+
+    function showResult(isPass, type) {
+        const title = document.getElementById('result-title'), content = document.getElementById('result-content'), btns = document.getElementById('result-btns');
+        title.innerHTML = isPass ? '<span class="success-animate">🎉 恭喜過關！</span>' : '挑戰結束';
+        title.className = isPass ? 'success-text' : '';
+        
+        if (type === "novice") {
+            const correctCount = noviceCorrect;
+            content.innerHTML = `<div class="score-highlight">答對題數：${correctCount} / 3 題</div>` + (isPass ? "你已經完全掌握了圍棋的基本功！" : "可惜了，要不要再看一次規則？");
+            btns.innerHTML = `<button class="btn-secondary" onclick="openGame('game1-tutorial')">回到教學</button><button class="btn-primary" onclick="startNoviceQuiz()">重新答題</button><button class="btn-secondary" onclick="closeGame()">回主選單</button>`;
+        } else if (type === "hikaru") {
+            const correctCount = hikaruScore / 10;
+            content.innerHTML = `<div class="score-highlight">答對題數：${correctCount} / 10 題</div>` + (isPass ? "太完美了！你對棋靈王的熱愛佐為都感受到了！" : `最終得分：${hikaruScore} 分。雖然沒拿到滿分，但也很棒喔！`);
+            btns.innerHTML = `<button class="btn-primary" onclick="startHikaruGame()">重新挑戰</button><button class="btn-secondary" onclick="closeGame()">回主選單</button>`;
+        } else {
+            title.innerHTML = '<span class="success-animate">🎉 挑戰成功！</span>';
+            content.innerHTML = "死活是圍棋的靈魂，你能解開這題代表你有極佳的計算力！";
+            btns.innerHTML = `<button class="btn-primary" onclick="closeGame()">回主選單</button>`;
+        }
+        
+        if (isPass) startConfetti();
+        openGame('result-screen');
+    }
+
+    function handleG3Success() { showResult(true, "g3"); }
+
+    function startConfetti() {
+        const container = document.getElementById('confetti-container');
+        container.innerHTML = '';
+        const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
+        for (let i = 0; i < 100; i++) {
+            const c = document.createElement('div');
+            c.className = 'confetti';
+            c.style.left = Math.random() * 100 + 'vw';
+            c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            c.style.width = Math.random() * 10 + 5 + 'px';
+            c.style.height = c.style.width;
+            c.style.animationDelay = Math.random() * 2 + 's';
+            container.appendChild(c);
+        }
+        setTimeout(() => container.innerHTML = '', 5000);
+    }
+</script>
+
+</body>
+</html>
